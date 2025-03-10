@@ -246,6 +246,8 @@ We recycle translations from upstream, they are pulled periodically. -->
     <string name="player_slider_style">Player slider style</string>
     <string name="default_">Default</string>
     <string name="squiggly">Squiggly</string>
+    <string name="use_wavy_seekbar">Use wavy seekbar</string>
+    <string name="use_wavy_seekbar_desc">Show a wavy style visualization instead of a standard slider</string>
     <string name="misc">Misc</string>
     <string name="default_open_tab">Default open tab</string>
     <string name="grid_cell_size">Grid cell size</string>

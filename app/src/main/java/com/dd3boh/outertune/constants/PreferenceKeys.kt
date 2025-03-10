@@ -44,7 +44,7 @@ enum class AudioQuality {
     AUTO, HIGH, LOW
 }
 val AudioOffload = booleanPreferencesKey("enableOffload")
-
+val UseWavySeekbarKey = booleanPreferencesKey("use_wavy_seekbar")
 val PersistentQueueKey = booleanPreferencesKey("persistentQueue")
 val SkipSilenceKey = booleanPreferencesKey("skipSilence")
 val SkipOnErrorKey = booleanPreferencesKey("skipOnError")

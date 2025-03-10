@@ -51,6 +51,7 @@ import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.constants.SkipOnErrorKey
 import com.dd3boh.outertune.constants.SkipSilenceKey
 import com.dd3boh.outertune.constants.StopMusicOnTaskClearKey
+import com.dd3boh.outertune.constants.UseWavySeekbarKey  // Add this import
 import com.dd3boh.outertune.constants.minPlaybackDurKey
 import com.dd3boh.outertune.ui.component.CounterDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
@@ -87,6 +88,8 @@ fun PlayerSettings(
     val (minPlaybackDur, onMinPlaybackDurChange) = rememberPreference(minPlaybackDurKey, defaultValue = 30)
     val (audioOffload, onAudioOffloadChange) = rememberPreference(key = AudioOffload, defaultValue = false)
     val (keepAlive, onKeepAliveChange) = rememberPreference(key = KeepAliveKey, defaultValue = false)
+    // Add preference for wavy seekbar
+    val (useWavySeekbar, onUseWavySeekbarChange) = rememberPreference(key = UseWavySeekbarKey, defaultValue = true)
 
     var showMinPlaybackDur by remember {
         mutableStateOf(false)
@@ -126,6 +129,16 @@ fun PlayerSettings(
             checked = persistentQueue,
             onCheckedChange = onPersistentQueueChange
         )
+        
+        // Add seekbar style preference
+        SwitchPreference(
+            title = { Text(stringResource(R.string.use_wavy_seekbar)) },
+            description = stringResource(R.string.use_wavy_seekbar_desc),
+            icon = { Icon(painterResource(R.drawable.wave), null) },
+            checked = useWavySeekbar,
+            onCheckedChange = onUseWavySeekbarChange
+        )
+        
         SwitchPreference(
             title = { Text(stringResource(R.string.auto_load_more)) },
             description = stringResource(R.string.auto_load_more_desc),

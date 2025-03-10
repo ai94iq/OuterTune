@@ -90,6 +90,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.media3.common.C
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
@@ -107,6 +108,7 @@ import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
 import com.dd3boh.outertune.constants.QueuePeekHeight
 import com.dd3boh.outertune.constants.ShowLyricsKey
+import com.dd3boh.outertune.constants.UseWavySeekbarKey
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.extensions.toggleRepeatMode
 import com.dd3boh.outertune.models.MediaMetadata
@@ -131,6 +133,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import com.dd3boh.outertune.ui.component.PlayerSlider
+import androidx.compose.runtime.mutableLongStateOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -188,6 +192,10 @@ fun BottomSheetPlayer(
 
     val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
 
+    val useWavySeekbar by rememberPreference(key = UseWavySeekbarKey, defaultValue = true)
+
+    var sliderDragPosition by remember { mutableLongStateOf(0L) }
+    val wasPlayingBeforeUserInteracted = remember { isPlaying }
 
     // gradient colours
     LaunchedEffect(mediaMetadata) {
@@ -379,30 +387,28 @@ fun BottomSheetPlayer(
                 }
             }
 
-            Slider(
-                value = (sliderPosition ?: position).toFloat(),
+            PlayerSlider(
+                modifier = Modifier.padding(horizontal = PlayerHorizontalPadding),
+                progress = (sliderPosition ?: position).toFloat(),
                 valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
-                onValueChange = {
-                    sliderPosition = it.toLong()
-                    // slider too granular for this haptic to feel right
-//                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                onProgressChange = { newValue ->
+                    sliderDragPosition = newValue.toLong()
+                    sliderPosition = sliderDragPosition
+                    if (isPlaying) {
+                        playerConnection.player.pause()
+                    }
                 },
-                onValueChangeFinished = {
-                    sliderPosition?.let {
-                        playerConnection.player.seekTo(it)
-                        position = it
+                onProgressFinish = {
+                    playerConnection.player.seekTo(sliderPosition ?: 0)
+                    if (wasPlayingBeforeUserInteracted) {
+                        playerConnection.player.play()
                     }
                     sliderPosition = null
                     haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 },
-                thumb = { Spacer(modifier = Modifier.size(0.dp)) },
-                track = { sliderState ->
-                    PlayerSliderTrack(
-                        sliderState = sliderState,
-                        colors = SliderDefaults.colors()
-                    )
-                },
-                modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
+                useWavyStyle = useWavySeekbar,
+                isAnimated = isPlaying,
+                waveAmplitude = if (isPlaying) 1.0f else 0.0f
             )
 
             Row(
